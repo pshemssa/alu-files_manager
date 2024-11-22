@@ -3,7 +3,7 @@ const AppController = require('../controllers/AppController');
 
 const router = express.Router();
 
-// Define routes
+// Define API endpoints
 router.get('/status', AppController.getStatus);
 router.get('/stats', AppController.getStats);
 
