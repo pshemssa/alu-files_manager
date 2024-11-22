@@ -1,37 +1,42 @@
 const crypto = require('crypto');
-const { MongoClient } = require('mongodb');
+const dbClient = require('../utils/db');
 
 class UsersController {
   static async postNew(req, res) {
     const { email, password } = req.body;
 
-    // Check for missing email or password
-    if (!email) return res.status(400).json({ error: 'Missing email' });
-    if (!password) return res.status(400).json({ error: 'Missing password' });
+    // Check for missing email
+    if (!email) {
+      return res.status(400).json({ error: 'Missing email' });
+    }
+
+    // Check for missing password
+    if (!password) {
+      return res.status(400).json({ error: 'Missing password' });
+    }
 
     try {
-      // Connect to the database
-      const client = new MongoClient('mongodb://localhost:27017');
-      await client.connect();
-      const db = client.db('file_manager');
-
-      // Check if email already exists
-      const existingUser = await db.collection('users').findOne({ email });
-      if (existingUser) {
-        await client.close();
+      // Check if the user already exists
+      const userExists = await dbClient.usersCollection.findOne({ email });
+      if (userExists) {
         return res.status(400).json({ error: 'Already exist' });
       }
 
       // Hash the password
       const hashedPassword = crypto.createHash('sha1').update(password).digest('hex');
 
-      // Insert the new user
-      const result = await db.collection('users').insertOne({ email, password: hashedPassword });
+      // Create the new user
+      const result = await dbClient.usersCollection.insertOne({
+        email,
+        password: hashedPassword,
+      });
 
-      await client.close();
-
-      // Return the created user
-      return res.status(201).json({ id: result.insertedId, email });
+      // Respond with the newly created user
+      const newUser = {
+        id: result.insertedId,
+        email,
+      };
+      return res.status(201).json(newUser);
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Internal Server Error' });
