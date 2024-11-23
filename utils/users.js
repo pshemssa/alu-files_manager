@@ -1,5 +1,5 @@
-import redisClient from './redis';
-import dbClient from './db';
+import redisClient from "./redis";
+import dbClient from "./db";
 
 /**
  * Module with user utilities
@@ -14,7 +14,7 @@ const userUtils = {
   async getUserIdAndKey(request) {
     const obj = { userId: null, key: null };
 
-    const xToken = request.header('X-Token');
+    const xToken = request.header("X-Token");
 
     if (!xToken) return obj;
 

@@ -1,9 +1,9 @@
-import { ObjectId } from 'mongodb';
-import { v4 as uuidv4 } from 'uuid';
-import { promises as fsPromises } from 'fs';
-import dbClient from './db';
-import userUtils from './user';
-import basicUtils from './basic';
+import { ObjectId } from "mongodb";
+import { v4 as uuidv4 } from "uuid";
+import { promises as fsPromises } from "fs";
+import dbClient from "./db";
+import userUtils from "./user";
+import basicUtils from "./basic";
 
 /**
  * Module with file utilities
@@ -15,24 +15,22 @@ const fileUtils = {
    * @return {object} object with err and validated params
    */
   async validateBody(request) {
-    const {
-      name, type, isPublic = false, data,
-    } = request.body;
+    const { name, type, isPublic = false, data } = request.body;
 
     let { parentId = 0 } = request.body;
 
-    const typesAllowed = ['file', 'image', 'folder'];
+    const typesAllowed = ["file", "image", "folder"];
     let msg = null;
 
-    if (parentId === '0') parentId = 0;
+    if (parentId === "0") parentId = 0;
 
     if (!name) {
-      msg = 'Missing name';
+      msg = "Missing name";
     } else if (!type || !typesAllowed.includes(type)) {
-      msg = 'Missing type';
-    } else if (!data && type !== 'folder') {
-      msg = 'Missing data';
-    } else if (parentId && parentId !== '0') {
+      msg = "Missing type";
+    } else if (!data && type !== "folder") {
+      msg = "Missing data";
+    } else if (parentId && parentId !== "0") {
       let file;
 
       if (basicUtils.isValidId(parentId)) {
@@ -44,9 +42,9 @@ const fileUtils = {
       }
 
       if (!file) {
-        msg = 'Parent not found';
-      } else if (file.type !== 'folder') {
-        msg = 'Parent is not a folder';
+        msg = "Parent not found";
+      } else if (file.type !== "folder") {
+        msg = "Parent is not a folder";
       }
     }
 
@@ -93,9 +91,7 @@ const fileUtils = {
    * @return {obj} object with error if present and file
    */
   async saveFile(userId, fileParams, FOLDER_PATH) {
-    const {
-      name, type, isPublic, data,
-    } = fileParams;
+    const { name, type, isPublic, data } = fileParams;
     let { parentId } = fileParams;
 
     if (parentId !== 0) parentId = ObjectId(parentId);
@@ -108,11 +104,11 @@ const fileUtils = {
       parentId,
     };
 
-    if (fileParams.type !== 'folder') {
+    if (fileParams.type !== "folder") {
       const fileNameUUID = uuidv4();
 
       // const fileDataDecoded = Buffer.from(data, 'base64').toString('utf-8');
-      const fileDataDecoded = Buffer.from(data, 'base64');
+      const fileDataDecoded = Buffer.from(data, "base64");
 
       const path = `${FOLDER_PATH}/${fileNameUUID}`;
 
@@ -148,7 +144,7 @@ const fileUtils = {
     const fileList = await dbClient.filesCollection.findOneAndUpdate(
       query,
       set,
-      { returnOriginal: false },
+      { returnOriginal: false }
     );
     return fileList;
   },
@@ -162,31 +158,35 @@ const fileUtils = {
   async publishUnpublish(request, setPublish) {
     const { id: fileId } = request.params;
 
-    if (!basicUtils.isValidId(fileId)) { return { error: 'Unauthorized', code: 401 }; }
+    if (!basicUtils.isValidId(fileId)) {
+      return { error: "Unauthorized", code: 401 };
+    }
 
     const { userId } = await userUtils.getUserIdAndKey(request);
 
-    if (!basicUtils.isValidId(userId)) { return { error: 'Unauthorized', code: 401 }; }
+    if (!basicUtils.isValidId(userId)) {
+      return { error: "Unauthorized", code: 401 };
+    }
 
     const user = await userUtils.getUser({
       _id: ObjectId(userId),
     });
 
-    if (!user) return { error: 'Unauthorized', code: 401 };
+    if (!user) return { error: "Unauthorized", code: 401 };
 
     const file = await this.getFile({
       _id: ObjectId(fileId),
       userId: ObjectId(userId),
     });
 
-    if (!file) return { error: 'Not found', code: 404 };
+    if (!file) return { error: "Not found", code: 404 };
 
     const result = await this.updateFile(
       {
         _id: ObjectId(fileId),
         userId: ObjectId(userId),
       },
-      { $set: { isPublic: setPublish } },
+      { $set: { isPublic: setPublish } }
     );
 
     const {
@@ -235,9 +235,11 @@ const fileUtils = {
    */
   isOwnerAndPublic(file, userId) {
     if (
-      (!file.isPublic && !userId)
-      || (userId && file.userId.toString() !== userId && !file.isPublic)
-    ) { return false; }
+      (!file.isPublic && !userId) ||
+      (userId && file.userId.toString() !== userId && !file.isPublic)
+    ) {
+      return false;
+    }
 
     return true;
   },
@@ -258,7 +260,7 @@ const fileUtils = {
       data = await fsPromises.readFile(localPath);
     } catch (err) {
       // console.log(err.message);
-      return { error: 'Not found', code: 404 };
+      return { error: "Not found", code: 404 };
     }
 
     return { data };
