@@ -1,16 +1,14 @@
 const express = require('express');
-const routes = require('./routes'); // Import routes from routes/index.js
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const port = process.env.PORT || 5000;
+const routes = require('./routes/index');
 
-// Middleware for JSON body parsing (if needed)
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ extended: false, limit: '20mb' }));
 
-// Load all routes
 app.use('/', routes);
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });

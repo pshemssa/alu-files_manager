@@ -28,7 +28,7 @@ class DBClient {
    * @return {boolean} true if connection alive or false if not
    */
   isAlive() {
-    return Boolean(this.db);
+    return !!this.db;
   }
 
   /**
@@ -36,7 +36,7 @@ class DBClient {
    * @return {number} amount of users
    */
   async nbUsers() {
-    const numberOfUsers = this.usersCollection.countDocuments();
+    const numberOfUsers = await this.usersCollection.countDocuments();
     return numberOfUsers;
   }
 
@@ -45,7 +45,7 @@ class DBClient {
    * @return {number} amount of files
    */
   async nbFiles() {
-    const numberOfFiles = this.filesCollection.countDocuments();
+    const numberOfFiles = await this.filesCollection.countDocuments();
     return numberOfFiles;
   }
 }
